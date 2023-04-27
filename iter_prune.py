@@ -60,6 +60,7 @@ def execute(
         input_file: str,
         output_dir: str,
         test: str,
+        yamlConfig,
         epochs=100,
         patience=10,
         lottery=False,
@@ -466,6 +467,8 @@ def execute(
     plot_metric_vs_bitparam(model_set,prune_result_set,bit_params_set,base_acc_set,metric_text='ACC',outputDir=output_dir)
     plot_metric_vs_bitparam(model_set, prune_result_set, bit_params_set, base_roc_set, metric_text='ROC',outputDir=output_dir)
 
+    return model_totalloss_set, model_estop_set
+
 
 if __name__ == "__main__":
     parser = OptionParser()
@@ -495,6 +498,7 @@ if __name__ == "__main__":
         options.inputFile,
         options.outputDir,
         options.test,
+        yamlConfig,
         epochs=options.epochs,
         patience=options.patience,
         lottery=options.lottery,
