@@ -1,13 +1,17 @@
 # pytorch-jet-classify
 
 ## Requirements:
-Python 3.7
+Python 3.8
 
 ```
 pip install -r requirements.txt
 ```
 
 ## Training:
+
+```
+python ./iter_prune.py -i train_data/train/ -t train_data/test/ -c ./configs/train_config_threelayer.yml -e 250 -o ./train_output/ -L -m 32,12,6,4 -n -s
+```
 
 ```
 python3 train.py -i <input H5 File/Directory of Files to train on> -o <output directory> -t <H5 File/Directory of files to use as test set> -e <num epoch to train for> -c <config to use>
