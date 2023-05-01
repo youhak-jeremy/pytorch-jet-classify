@@ -19,11 +19,13 @@ import torch.nn.utils.prune as prune
 import models
 import jet_dataset
 from training.early_stopping import EarlyStopping
-from training.train_funcs import train, val, test_pruned as test
+from training.train_funcs import train, val, test_pruned
 from tools.aiq import calc_AiQ 
 from training.training_plots import plot_total_loss, plot_total_eff, plot_metric_vs_bitparam, plot_kernels
 from tools.param_count import countNonZeroWeights
 from tools.parse_yaml_config import parse_config
+import tqdm
+import time
 
 def prune_model(model, amount, prune_mask, method=prune.L1Unstructured):
     model.to('cpu')
@@ -138,9 +140,13 @@ def execute(
     # Setup cuda
     use_cuda = torch.cuda.is_available()
     device = torch.device("cuda:0" if use_cuda else "cpu")
-    print("Using Device: {}".format(device))
     if use_cuda:
         print("cuda:0 device type: {}".format(torch.cuda.get_device_name(0)))
+    else:
+        use_mps = torch.backends.mps.is_available() and torch.backends.mps.is_built()
+        device = torch.device("mps") if use_mps else device
+    
+    print("Using Device: {}".format(device))
 
     if lottery:
         torch.backends.cudnn.enabled = True
@@ -201,12 +207,12 @@ def execute(
     
     # Setup dataloaders with our dataset
     train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size,
-                                              shuffle=True, num_workers=10, pin_memory=True)  # FFS, have to use numworkers = 0 because apparently h5 objects can't be pickled, https://github.com/WuJie1010/Facial-Expression-Recognition.Pytorch/issues/69
+                                              shuffle=True, num_workers=8, pin_memory=True)  # FFS, have to use numworkers = 0 because apparently h5 objects can't be pickled, https://github.com/WuJie1010/Facial-Expression-Recognition.Pytorch/issues/69
 
     val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=batch_size,
-                                              shuffle=True, num_workers=10, pin_memory=True)
+                                              shuffle=True, num_workers=8, pin_memory=True)
     test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=test_size,
-                                              shuffle=False, num_workers=10, pin_memory=True)
+                                              shuffle=False, num_workers=8, pin_memory=True)
     base_quant_params = None
 
     for model, prune_mask, init_sd in zip(model_set, prune_mask_set, inital_models_sd):
@@ -313,7 +319,7 @@ def execute(
 
             # Time for plots
             now = datetime.now()
-            time = now.strftime("%d-%m-%Y_%H-%M-%S")
+            time_now = now.strftime("%d-%m-%Y_%H-%M-%S")
 
             # Plot & save losses for this iteration
             loss_plt = plt.figure()
@@ -346,7 +352,7 @@ def execute(
             loss_ax.set_ylabel('loss')
             loss_ax.grid(True)
             loss_ax.legend()
-            filename = 'loss_plot_{}b_e{}_{}_.png'.format(nbits,epoch_counter,time)
+            filename = 'loss_plot_{}b_e{}_{}_.png'.format(nbits,epoch_counter,time_now)
             loss_ax.set_title('Loss from epoch {} to {}, {}b model'.format(last_stop,epoch_counter,nbits))
             loss_plt.savefig(path.join(output_dir, filename), bbox_inches='tight')
             loss_plt.show()
@@ -364,7 +370,7 @@ def execute(
                 loss_ax.set_ylabel('Net Efficiency')
                 loss_ax.grid(True)
                 loss_ax.legend()
-                filename = 'eff_plot_{}b_e{}_{}_.png'.format(nbits,epoch_counter,time)
+                filename = 'eff_plot_{}b_e{}_{}_.png'.format(nbits,epoch_counter,time_now)
                 loss_plt.savefig(path.join(output_dir, filename), bbox_inches='tight')
                 loss_plt.show()
                 plt.close(loss_plt)
@@ -374,38 +380,38 @@ def execute(
 
             # Time for filenames
             now = datetime.now()
-            time = now.strftime("%d-%m-%Y_%H-%M-%S")
+            time_now = now.strftime("%d-%m-%Y_%H-%M-%S")
 
             if first_run:
                 # Test base model, first iteration of the float model
                 print("Base Float Model:")
                 base_params,_,_,_ = countNonZeroWeights(model)
-                accuracy_score_value_list, roc_auc_score_list = test(model, test_loader, pruned_params=0,
+                accuracy_score_value_list, roc_auc_score_list = test_pruned(model, test_loader, pruned_params=0,
                                                                             base_params=base_params, nbits=nbits, 
                                                                             outputDir=output_dir, device=device,test_dataset_labels=test_dataset.labels_list)
                 base_accuracy_score = np.average(accuracy_score_value_list)
                 base_roc_score = np.average(roc_auc_score_list)
-                filename = path.join(output_dir, 'weight_dist_{}b_Base_{}.png'.format(nbits, time))
+                filename = path.join(output_dir, 'weight_dist_{}b_Base_{}.png'.format(nbits, time_now))
                 plot_kernels(model, text=' (Unpruned FP Model)', output=filename)
                 if not path.exists(path.join(output_dir,'models','{}b'.format(nbits))):
                     os.makedirs(path.join(output_dir,'models','{}b'.format(nbits)))
-                model_filename = path.join(output_dir,'models','{}b'.format(nbits), "{}b_unpruned_{}.pth".format(nbits, time))
+                model_filename = path.join(output_dir,'models','{}b'.format(nbits), "{}b_unpruned_{}.pth".format(nbits, time_now))
                 torch.save(model.state_dict(),model_filename)
                 first_run = False
             elif first_quant:
                 # Test Unpruned, Base Quant model
                 print("Base Quant Model: ")
                 base_quant_params,_,_,_ = countNonZeroWeights(model)
-                accuracy_score_value_list, roc_auc_score_list = test(model, test_loader, pruned_params=0,
+                accuracy_score_value_list, roc_auc_score_list = test_pruned(model, test_loader, pruned_params=0,
                                                                             base_params=base_params, nbits=nbits, 
                                                                             outputDir=output_dir, device=device,test_dataset_labels=test_dataset.labels_list)
                 base_quant_accuracy_score = np.average(accuracy_score_value_list)
                 base_quant_roc_score = np.average(roc_auc_score_list)
-                filename = path.join(output_dir, 'weight_dist_{}b_qBase_{}.png'.format(nbits, time))
+                filename = path.join(output_dir, 'weight_dist_{}b_qBase_{}.png'.format(nbits, time_now))
                 plot_kernels(model, text=' (Unpruned Quant Model)', output=filename)
                 if not path.exists(path.join(output_dir,'models','{}b'.format(nbits))):
                     os.makedirs(path.join(output_dir,'models','{}b'.format(nbits)))
-                model_filename = path.join(output_dir,'models','{}b'.format(nbits), "{}b_unpruned_{}.pth".format(nbits, time))
+                model_filename = path.join(output_dir,'models','{}b'.format(nbits), "{}b_unpruned_{}.pth".format(nbits, time_now))
                 torch.save(model.state_dict(),model_filename)
                 first_quant = False
             else:
@@ -421,14 +427,14 @@ def execute(
                 bit_params.append(current_params * nbits)
                 if not path.exists(path.join(output_dir,'models','{}b'.format(nbits))):
                     os.makedirs(path.join(output_dir,'models','{}b'.format(nbits)))
-                model_filename = path.join(output_dir,'models','{}b'.format(nbits),"{}b_{}pruned_{}.pth".format(nbits, (base_params-current_params), time))
+                model_filename = path.join(output_dir,'models','{}b'.format(nbits),"{}b_{}pruned_{}.pth".format(nbits, (base_params-current_params), time_now))
                 torch.save(model.state_dict(),model_filename)
 
             # Prune for next iter
             if prune_value > 0:
                 model = prune_model(model, prune_value, prune_mask)
                 # Plot weight dist
-                filename = path.join(output_dir, 'weight_dist_{}b_e{}_{}.png'.format(nbits, epoch_counter, time))
+                filename = path.join(output_dir, 'weight_dist_{}b_e{}_{}.png'.format(nbits, epoch_counter, time_now))
                 print("Post Pruning: ")
                 pruned_params,_,_,_ = countNonZeroWeights(model)
                 plot_kernels(model,

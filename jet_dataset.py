@@ -31,7 +31,7 @@ class ParticleJetDataset(Dataset):
                 for file in os.listdir(data_path):
                     if (file.endswith(".h5") or file.endswith(".h5df")) and (file in filenames):
                         try:
-                            print("Loading " + str(file))
+                            # print("Loading " + str(file))
                             self.h5File = h5py.File(os.path.join(data_path,file), 'r', libver='latest', swmr=True)
                             if first:
                                 columns_arr = np.array(self.h5File['jetFeatureNames'][:]).astype(str)  # slicing h5 data because otherwise it's a reference to the actual file?
@@ -59,7 +59,7 @@ class ParticleJetDataset(Dataset):
                 for file in os.listdir(data_path):
                     if file.endswith(".h5") or file.endswith(".h5df"):
                         try:
-                            print("Loading " + str(file))
+                            # print("Loading " + str(file))
                             self.h5File = h5py.File(os.path.join(data_path,file), 'r', libver='latest', swmr=True)
                             if first:
                                 columns_arr = np.array(self.h5File['jetFeatureNames'][:]).astype(str)  # slicing h5 data because otherwise it's a reference to the actual file?

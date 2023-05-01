@@ -22,11 +22,11 @@ def train(model, optimizer, loss, train_loader, L1_factor=0.0001, l1reg=True, de
     for i, data in enumerate(train_loader, 0):
         local_batch, local_labels = data
         model.train()
-        local_batch, local_labels = local_batch.to(device), local_labels.to(device)
+        local_batch, local_labels = local_batch.float().to(device), local_labels.float().to(device)
         # forward + backward + optimize
         optimizer.zero_grad()
-        outputs = model(local_batch.float())
-        criterion_loss = loss(outputs, local_labels.float())
+        outputs = model(local_batch)
+        criterion_loss = loss(outputs, local_labels)
         if l1reg:
             reg_loss = l1_regularizer(model, lambda_l1=L1_factor)
         else:
@@ -48,9 +48,9 @@ def val(model, loss, val_loader, L1_factor=0.01, device='cpu'):
         model.eval()
         for i, data in enumerate(val_loader, 0):
             local_batch, local_labels = data
-            local_batch, local_labels = local_batch.to(device), local_labels.to(device)
-            outputs = model(local_batch.float())
-            criterion_loss = loss(outputs, local_labels.float())
+            local_batch, local_labels = local_batch.float().to(device), local_labels.float().to(device)
+            outputs = model(local_batch)
+            criterion_loss = loss(outputs, local_labels)
             reg_loss = l1_regularizer(model, lambda_l1=L1_factor)
             val_loss = criterion_loss + reg_loss
             local_batch, local_labels = local_batch.cpu(), local_labels.cpu()
@@ -72,8 +72,8 @@ def test(model, test_loader, plot=True, nbits=32, outputDir='..', device='cpu', 
         for i, data in enumerate(test_loader):
             model.eval()
             local_batch, local_labels = data
-            local_batch, local_labels = local_batch.to(device), local_labels.to(device)
-            outputs = model(local_batch.float())
+            local_batch, local_labels = local_batch.float().to(device), local_labels.float().to(device)
+            outputs = model(local_batch)
             _, preds = torch.max(outputs, 1)
             predlist = torch.cat([predlist, preds.view(-1).cpu()])
             lbllist = torch.cat([lbllist, torch.max(local_labels, 1)[1].view(-1).cpu()])
