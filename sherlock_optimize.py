@@ -3,28 +3,30 @@ import numpy as np
 from sherlock import Sherlock
 from typing import List
 import models
-from iter_prune import execute
+from iter_quantize import execute
 from tools.parse_yaml_config import parse_config
 
 def step(X: np.ndarray, y: np.ndarray, known_idx: List[int], yaml_config):
     print(known_idx)
-
     for idx in known_idx:
-        model_totalloss_set, model_estop_set = execute(
-            models,
-            "./train_data/train",
-            "./train_output",
-            "./train_data/test",
-            yaml_config,
-            epochs=10,
-            model_set=tuple(X[idx, :])
-        )
+        performance, efficiency = execute(
+            train_file="./train_data/train",
+            output_dir="./train_output",
+            test_file="./train_data/test",
+            metrics_file="metrics.json",
+            yamlConfig=yaml_config,
+            num_epochs=10,
+            quantization_spec=X[idx, :].tolist()
+        ) 
+        
 
-        y[known_idx, :] = [1 / model_totalloss_set[-1], model_estop_set[-1]] # Minimize the loss, Maxmize the efficiency
+        y[known_idx, :] = [1 / performance, efficiency] # Minimize the loss, Maxmize the efficiency
 
 if __name__ == '__main__':
+    # For the inputs, outputs of the model
     yaml_config = parse_config("./configs/train_config_threelayer.yml")
 
+    # QUESTION: WHY 5??!!
     layer_1_quantization = [32, 12, 8, 6, 4]
     layer_2_quantization = [32, 12, 8, 6, 4]
     layer_3_quantization = [32, 12, 8, 6, 4]
