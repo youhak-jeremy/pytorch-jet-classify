@@ -13,7 +13,6 @@ def step(X: np.ndarray, y: np.ndarray, known_idx: List[int], yaml_config):
             train_file="./train_data/train",
             output_dir="./train_output",
             test_file="./train_data/test",
-            metrics_file="metrics.json",
             yamlConfig=yaml_config,
             num_epochs=10,
             quantization_spec=X[idx, :].tolist()

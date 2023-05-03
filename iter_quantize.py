@@ -41,7 +41,7 @@ def store_model(model, save_path):
 
 def load_metrics(metrics_file):
     with open(metrics_file, "r") as f:
-        json.load(f)
+        return json.load(f)
 
 def store_metrics(metrics, metrics_file):
     with open(metrics_file, "w") as f:
@@ -106,10 +106,10 @@ def train_loop(model, dataloaders, num_epochs, device):
         metrics.setdefault('avg_precision_scores', []).append(val_avg_precision)
 
         # Print epoch statistics
-        print('[epoch %d] train batch loss: %.7f' % (epoch + 1, train_loss))
-        print('[epoch %d] val batch loss: %.7f' % (epoch + 1, val_loss))
-        print('[epoch %d] val ROC AUC Score: %.7f' % (epoch + 1, val_roc_auc_score))
-        print('[epoch %d] val Avg Precision Score: %.7f' % (epoch + 1, val_avg_precision))
+#         print('[epoch %d] train batch loss: %.7f' % (epoch + 1, train_loss))
+#         print('[epoch %d] val batch loss: %.7f' % (epoch + 1, val_loss))
+#         print('[epoch %d] val ROC AUC Score: %.7f' % (epoch + 1, val_roc_auc_score))
+#         print('[epoch %d] val Avg Precision Score: %.7f' % (epoch + 1, val_avg_precision))
         # Check if we need to early stop
         # early_stopping(val_loss, model)
         # if early_stopping.early_stop:
@@ -139,18 +139,18 @@ def execute(
         test_file,
         yamlConfig,
         output_dir,
-        metrics_file,
         quantization_spec,
         num_epochs
     ):
     quant_spec_str = '_'.join(str(v) for v in quantization_spec)
     ckpt_save_path = f"checkpoints/model_{quant_spec_str}.ckpt"
+    metrics_save_path = f"metrics/metrics_{quant_spec_str}.json"
     os.makedirs("checkpoints/", exist_ok = True)
     os.makedirs("metrics/", exist_ok = True)
 
     if os.path.exists(ckpt_save_path):
-        metrics = load_metrics(metrics_file)
-        return metrics["model_totalloss_set"], metrics["model_estop_set"]
+        metrics = load_metrics(metrics_save_path)
+        return metrics["performance"], metrics["efficiency"]
     
     # create given output directory if it doesnt exist
     if not path.exists(output_dir):
@@ -173,7 +173,7 @@ def execute(
     dataloaders = load_jet_data(train_file, test_file, yamlConfig)
     metrics = train_loop(model, dataloaders, num_epochs, device)
     store_model(model, ckpt_save_path)
-    store_metrics(metrics, metrics_file)
+    store_metrics(metrics, metrics_save_path)
 
     # Time for filenames
     filename = path.join(output_dir, f'weight_dist_{quant_spec_str}.png')
@@ -187,7 +187,6 @@ if __name__ == "__main__":
     parser.add_option('-i','--input_file'   ,action='store',type='string',dest='input_file'   ,default='', help='location of data to train off of')
     parser.add_option('-t','--test_file'   ,action='store',type='string',dest='test_file' ,default='', help='Location of test data set')
     parser.add_option('-o','--output_dir'   ,action='store',type='string',dest='output_dir' ,default='train_simple/', help='output directory')
-    parser.add_option('-t','--metrics_file'   ,action='store',type='string',dest='metrics_file' ,default='metrics.json', help='Location to store metrics')
     parser.add_option('-e','--num_epochs'   ,action='store',type='int', dest='epochs', default=100, help='number of epochs to train for')
     parser.add_option('-c','--config'   ,action='store',type='string',dest='config'   ,default='configs/train_config_threelayer.yml', help='tree name')
     parser.add_option('-m', '--quantization_spec', type='str', dest='quantization_spec', default='32,12,8,6,4', help='comma separated list of which bit widths to run')
@@ -199,7 +198,6 @@ if __name__ == "__main__":
         options.test_file,
         yamlConfig,
         options.output_dir,
-        options.metrics_file,
         options.quantization_spec,
         options.num_epochs
     )

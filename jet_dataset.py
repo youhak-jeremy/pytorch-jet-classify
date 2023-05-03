@@ -126,5 +126,5 @@ class ParticleJetDataset(Dataset):
     def __len__(self):
         return len(self.features_val)
 
-    def close(self):
+    def __del__(self):
         self.h5File.close()

@@ -35,7 +35,7 @@ def train(model, optimizer, loss, train_loader, L1_factor=0.0001, l1reg=True, de
         total_loss.backward()
         optimizer.step()
         step_loss = total_loss.item()
-        train_loss += step_loss * x.size(0)
+        train_loss += step_loss
     train_loss /= len(train_loader)
     return model, train_loss
 
@@ -59,7 +59,7 @@ def val(model, loss, val_loader, L1_factor=0.01, device='cpu'):
             val_roc_auc_scores_list.append(roc_auc_score(np.nan_to_num(y.numpy()), np.nan_to_num(outputs.numpy())))
             val_avg_precision_list.append(average_precision_score(np.nan_to_num(y.numpy()), np.nan_to_num(outputs.numpy())))
             step_loss = val_loss.item()
-            val_losses += step_loss * x.size(0)
+            val_losses += step_loss
     val_losses /= len(val_loader)
     return val_losses, np.average(val_avg_precision_list), np.average(val_roc_auc_scores_list)
 

@@ -26,7 +26,8 @@ def calc_AiQ(aiq_model, test_loader, batnorm = True, device='cpu', loadfile=None
         aiq_model.load_state_dict(torch.load(os.path.join(loadfile), map_location=device))
 
     aiq_model.cpu()
-    aiq_model.mask_to_device('cpu')
+    if hasattr(aiq_model, "mask_to_device"):
+        aiq_model.mask_to_device('cpu')
     aiq_model.eval()
     hooklist = []
     # Set up the data
@@ -152,7 +153,8 @@ def calc_AiQ(aiq_model, test_loader, batnorm = True, device='cpu', loadfile=None
             #print('AiQ Calc Execution time: {}'.format(time_lib.time() - start_time))
             # Return AiQ along with our metrics
             aiq_model.to(device)
-            aiq_model.mask_to_device(device)
+            if hasattr(aiq_model, "mask_to_device"):
+                aiq_model.mask_to_device('cpu')
             return {'net_efficiency': net_efficiency, 'layer_metrics': layer_metrics}, (time_lib.time() - start_time)
         else:
             # Calculate efficiency and entropy of each layer
