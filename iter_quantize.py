@@ -135,9 +135,7 @@ def train_loop(model, dataloaders, num_epochs, device):
 
 
 def execute(
-        train_file,
-        test_file,
-        yamlConfig,
+        dataloaders,
         output_dir,
         quantization_spec,
         num_epochs
@@ -170,7 +168,6 @@ def execute(
     
     print("Using Device: {}".format(device))
 
-    dataloaders = load_jet_data(train_file, test_file, yamlConfig)
     metrics = train_loop(model, dataloaders, num_epochs, device)
     store_model(model, ckpt_save_path)
     store_metrics(metrics, metrics_save_path)
@@ -193,10 +190,13 @@ if __name__ == "__main__":
     (options,args) = parser.parse_args()
     yamlConfig = parse_config(options.config)
 
-    execute(
+    dataloaders = load_jet_data(
         options.train_file,
         options.test_file,
-        yamlConfig,
+        yamlConfig)
+    
+    execute(
+        dataloaders,
         options.output_dir,
         options.quantization_spec,
         options.num_epochs
