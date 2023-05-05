@@ -121,13 +121,13 @@ def train_loop(model, dataloaders, num_epochs, device):
 
     print("Base Quant Model: ")
 
-    base_quant_params,_,_,_ = countNonZeroWeights(model)
+    # base_quant_params,_,_,_ = countNonZeroWeights(model)
     bops = calc_BOPS(model)
     base_quant_accuracy_score, base_quant_roc_score = test(model, test_loader)
     aiq_dict, aiq_time = calc_AiQ(model,test_loader,batnorm=False,device=device)
 
     metrics['bops'] = bops
-    metrics['base_quant_params'] = base_quant_params
+    # metrics['base_quant_params'] = base_quant_params
     metrics['base_quant_accuracy_score'] = base_quant_accuracy_score
     metrics['base_quant_roc_score'] = base_quant_roc_score
 

@@ -46,7 +46,7 @@ if __name__ == '__main__':
     
     percent = 0.3
     budget = int(round(percent * count))
-
+    np.random.seed(0)
     sherlock = Sherlock(
         n_init=5,
         budget=budget,
