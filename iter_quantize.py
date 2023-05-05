@@ -22,8 +22,9 @@ from training.early_stopping import EarlyStopping
 from training.train_funcs import train, val, test
 from tools.aiq import calc_AiQ 
 from training.training_plots import plot_total_loss, plot_total_eff, plot_metric_vs_bitparam, plot_kernels
-from tools.param_count import countNonZeroWeights
+from tools.param_count import countNonZeroWeights, calc_BOPS
 from tools.parse_yaml_config import parse_config
+
 import tqdm
 import time
 
@@ -121,10 +122,11 @@ def train_loop(model, dataloaders, num_epochs, device):
     print("Base Quant Model: ")
 
     base_quant_params,_,_,_ = countNonZeroWeights(model)
+    bops = calc_BOPS(model)
     base_quant_accuracy_score, base_quant_roc_score = test(model, test_loader)
     aiq_dict, aiq_time = calc_AiQ(model,test_loader,batnorm=False,device=device)
 
-
+    metrics['bops'] = bops
     metrics['base_quant_params'] = base_quant_params
     metrics['base_quant_accuracy_score'] = base_quant_accuracy_score
     metrics['base_quant_roc_score'] = base_quant_roc_score
@@ -171,10 +173,6 @@ def execute(
     metrics = train_loop(model, dataloaders, num_epochs, device)
     store_model(model, ckpt_save_path)
     store_metrics(metrics, metrics_save_path)
-
-    # Time for filenames
-    filename = path.join(output_dir, f'weight_dist_{quant_spec_str}.png')
-    plot_kernels(model, text=' (Unpruned Quant Model)', output=filename)
 
     return metrics['performance'], metrics['efficiency']
 
