@@ -125,8 +125,8 @@ def train_loop(model, dataloaders, num_epochs, device):
 
 
     # take ~10% of the "original" value each time, until last few iterations, reducing to ~1.2% original network size
-    prune_value_set = [0.10, 0.111, .125, .143, .166, .20, .25, .333, .50, .666, .666]
-    prune_value_set.append(0)  # Last 0 is so the final iteration can fine tune before testing
+    prune_value_set = [0.10, 0.111, .125, .143, .166, .20, .25, .333]#, .50, .666, .666]
+    #prune_value_set.append(0)  # Last 0 is so the final iteration can fine tune before testing
 
     prune_mask = {
             "fc1": torch.ones(64, 16),
