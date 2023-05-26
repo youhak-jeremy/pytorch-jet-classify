@@ -79,6 +79,35 @@ def load_jet_data(train_file, test_file, yamlConfig):
 
     return train_loader, val_loader, test_loader
 
+
+def prune_model(model, amount, prune_mask, method=prune.L1Unstructured):
+    model.to('cpu')
+    for name, module in model.named_modules():  # re-apply current mask to the model
+        if isinstance(module, torch.nn.Linear):
+#            if name is not "fc4":
+             prune.custom_from_mask(module, "weight", prune_mask[name])
+
+    parameters_to_prune = (
+        (model.fc1, 'weight'),
+        (model.fc2, 'weight'),
+        (model.fc3, 'weight'),
+        (model.fc4, 'weight'),
+    )
+    prune.global_unstructured(  # global prune the model
+        parameters_to_prune,
+        pruning_method=method,
+        amount=amount,
+    )
+
+    for name, module in model.named_modules():  # make pruning "permanant" by removing the orig/mask values from the state dict
+        if isinstance(module, torch.nn.Linear):
+#            if name is not "fc4":
+            torch.logical_and(module.weight_mask, prune_mask[name],
+                              out=prune_mask[name])  # Update progress mask
+            prune.remove(module, 'weight')  # remove all those values in the global pruned model
+
+    return model
+
 def get_model(layer_quantization_specs):
     model = models.three_layer_model_custom_quant(layer_quantization_specs)
     return model
@@ -94,30 +123,36 @@ def train_loop(model, dataloaders, num_epochs, device):
     criterion = nn.BCELoss()
     batnorm = False
 
-    for epoch in range(num_epochs):  # loop over the dataset multiple times
-        epoch_counter += 1
-        # Train
-        model, train_loss = train(model, optimizer, criterion, train_loader, L1_factor=L1FACTOR, l1reg=L1REG, device=device)
 
-        # Validate
-        val_loss, val_avg_precision, val_roc_auc_score = val(model, criterion, val_loader, L1_factor=L1FACTOR, device=device)
+    # take ~10% of the "original" value each time, until last few iterations, reducing to ~1.2% original network size
+    prune_value_set = [0.10, 0.111, .125, .143, .166, .20, .25, .333, .50, .666, .666]
+    prune_value_set.append(0)  # Last 0 is so the final iteration can fine tune before testing
 
-        metrics.setdefault('avg_train_losses', []).append(train_loss)
-        metrics.setdefault('avg_valid_losses', []).append(val_loss)
-        metrics.setdefault('avg_precision_scores', []).append(val_avg_precision)
+    prune_mask = {
+            "fc1": torch.ones(64, 16),
+            "fc2": torch.ones(32, 64),
+            "fc3": torch.ones(32, 32),
+            "fc4": torch.ones(5, 32)}
+    
+    for prune_value in prune_value_set:
+        for epoch in range(num_epochs):  # loop over the dataset multiple times
+            epoch_counter += 1
+            # Train
+            model, train_loss = train(model, optimizer, criterion, train_loader, L1_factor=L1FACTOR, l1reg=L1REG, device=device)
 
-        # Print epoch statistics
-#         print('[epoch %d] train batch loss: %.7f' % (epoch + 1, train_loss))
-#         print('[epoch %d] val batch loss: %.7f' % (epoch + 1, val_loss))
-#         print('[epoch %d] val ROC AUC Score: %.7f' % (epoch + 1, val_roc_auc_score))
-#         print('[epoch %d] val Avg Precision Score: %.7f' % (epoch + 1, val_avg_precision))
-        # Check if we need to early stop
-        # early_stopping(val_loss, model)
-        # if early_stopping.early_stop:
-        #     print("Early stopping")
-        #     estop = True
-        #     break
-        # Test Unpruned, Base Quant model
+            # Validate
+            val_loss, val_avg_precision, val_roc_auc_score = val(model, criterion, val_loader, L1_factor=L1FACTOR, device=device)
+
+            metrics.setdefault('avg_train_losses', []).append(train_loss)
+            metrics.setdefault('avg_valid_losses', []).append(val_loss)
+            metrics.setdefault('avg_precision_scores', []).append(val_avg_precision)
+
+        # Prune for next iter
+        if prune_value > 0:
+            model = prune_model(model, prune_value, prune_mask)
+            # Plot weight dist
+            #print("Post Pruning: ")
+            #pruned_params,_,_,_ = countNonZeroWeights(model)
 
     print("Base Quant Model: ")
 
@@ -132,7 +167,7 @@ def train_loop(model, dataloaders, num_epochs, device):
     metrics['base_quant_roc_score'] = base_quant_roc_score
 
     metrics['performance'] = metrics['base_quant_accuracy_score']
-    metrics['efficiency'] = aiq_dict['net_efficiency']
+    metrics['efficiency'] = metrics['bops'] #aiq_dict['net_efficiency']
     return metrics
 
 
