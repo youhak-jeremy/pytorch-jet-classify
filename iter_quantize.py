@@ -102,8 +102,8 @@ def prune_model(model, amount, prune_mask, method=prune.L1Unstructured):
     for name, module in model.named_modules():  # make pruning "permanant" by removing the orig/mask values from the state dict
         if isinstance(module, torch.nn.Linear):
 #            if name is not "fc4":
-            torch.logical_and(module.weight_mask, prune_mask[name],
-                              out=prune_mask[name])  # Update progress mask
+            # torch.logical_and(module.weight_mask, prune_mask[name],
+            #                   out=prune_mask[name])  # Update progress mask
             prune.remove(module, 'weight')  # remove all those values in the global pruned model
 
     return model
