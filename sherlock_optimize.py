@@ -5,19 +5,20 @@ from typing import List
 import models
 from iter_quantize import execute, load_jet_data
 from tools.parse_yaml_config import parse_config
+from constants import *
 
 def step(X: np.ndarray, y: np.ndarray, known_idx: List[int], dataloaders):
     print(known_idx)
 
     for idx in known_idx:
-        performance, efficiency = execute(
+        performance, bops = execute(
             dataloaders,
             output_dir="./train_output",
             num_epochs=10,
             quantization_spec=X[idx, :].tolist()
         ) 
         
-        y[known_idx, :] = [1 / performance, efficiency] # Minimize the loss, Maxmize the efficiency
+        y[known_idx, :] = [1 / performance, 1 / (bops / BOPS_SCALING)] # Minimize the loss, minimize the bops
 
 if __name__ == '__main__':
     # For the inputs, outputs of the model

@@ -5,3 +5,4 @@ ER_PATIENCE = 10
  # Set Batch size and split value
 BATCH_SIZE = 1024
 TRAIN_SPLIT = 0.75
+BOPS_SCALING = 1e6
