@@ -49,18 +49,13 @@ The graph above illustrates an example choice which results in approximately 80%
 
 ## References: 
 
-Overview Paper: 
-> Gautier, Quentin and Althoff, Alric
-> Crutchfield, Christopher L Kastner, Ryan
-> Sherlock: A Multi-Objective Design Space Exploration Framework
-> Association for Computing Machinery 2022
+Sherlock: 
 
-Jet-Tagger Quantization Benchmark Paper:
-> End-to-end codesign of Hessian-aware
-> quantized neural networks for FPGAs and ASICs
-> Javier Campos, Jovan Mitrevski, Nhan Tran
-> Zhen Dong, Amir Gholami, Michael W. Mahoney, Javier Duarte
-> University of California San Diego
+>Quentin Gautier, Alric Althoff, Christopher L. Crutchfield, and Ryan Kastner. 2022. Sherlock: A Multi-Objective Design Space Exploration Framework. ACM Trans. Des. Autom. Electron. Syst. 27, 4, Article 33 (July 2022), 20 pages. https://doi.org/10.1145/3511472
+
+
+Jet-Tagger quantization benchmark:
+> Campos, Javier, et al. "End-to-end codesign of Hessian-aware quantized neural networks for FPGAs and ASICs." arXiv preprint arXiv:2304.06745 (2023).
 
 
 
