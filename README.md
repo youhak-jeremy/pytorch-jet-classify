@@ -41,8 +41,8 @@ This will generate two folders:
  2. “metrics” with json files for each trained model containing metrics related to the performance, model size, training curves, etc.
 
 
-Use the “plot_pareto.ipynb” notebook to generate the plot
-![alt text](images/plot_pareto_front.png)
+Use the “plot_pareto.ipynb” notebook to generate a plot like the one below.
+![alt text](images/pareto_front.png)
 
 
 
