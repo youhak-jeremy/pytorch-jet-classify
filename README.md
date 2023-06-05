@@ -27,7 +27,18 @@ Neural network quantization is a complex process that typically demands expert i
 pip install -r requirements.txt
 ```
 
+## Usage: 
+
+Train the 3-layer JetTagger model using the below command
+
 ```
+python sherlock_optimize.py
+```
+This will generate two folders, “checkpoints” and “metrics” 
+
+Use the “plot_pareto.ipynb” notebook to generate the plot as shwon in example.ipynb 
+![alt text](https://github.com/youhak-jeremy/pytorch-jet-classify/edit/master/plot_pareto_front.png?raw=true)
+
 
 
 
