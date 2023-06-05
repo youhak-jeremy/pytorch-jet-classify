@@ -45,6 +45,8 @@ Use the “plot_pareto.ipynb” notebook to generate a plot like the one below.
 ![alt text](images/pareto_front.png)
 
 
+The graph above illustrates an example choice which results in approximately 80% fewer computations, yet causes less than a 3% drop in accuracy.
+
 
 
 
