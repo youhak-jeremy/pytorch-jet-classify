@@ -212,4 +212,6 @@ pyrightconfig.json
 .history
 .ionide
 
+metrics/
+checkpoints/
 # End of https://www.toptal.com/developers/gitignore/api/python,linux,visualstudiocode
