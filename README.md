@@ -34,10 +34,15 @@ Train the 3-layer JetTagger model using the below command
 ```
 python sherlock_optimize.py
 ```
-This will generate two folders, “checkpoints” and “metrics” 
+
+This will generate two folders:
+
+ 1. “checkpoints” which contains the trained models
+ 2. “metrics” with json files for each trained model containing metrics related to the performance, model size, training curves, etc.
+
 
 Use the “plot_pareto.ipynb” notebook to generate the plot
-![alt text](https://github.com/youhak-jeremy/pytorch-jet-classify/blob/master/plot_pareto_front.png?raw=true)
+![alt text](images/plot_pareto_front.png)
 
 
 
