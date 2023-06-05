@@ -48,6 +48,23 @@ Use the “plot_pareto.ipynb” notebook to generate a plot like the one below.
 The graph above illustrates an example choice which results in approximately 80% fewer computations, yet causes less than a 3% drop in accuracy.
 
 
+## References: 
+
+Overview Paper: 
+> Gautier, Quentin and Althoff, Alric
+> Crutchfield, Christopher L Kastner, Ryan
+> Sherlock: A Multi-Objective Design Space Exploration Framework
+> Association for Computing Machinery 2022
+
+Jet-Tagger Quantization Benchmark Paper:
+> End-to-end codesign of Hessian-aware
+> quantized neural networks for FPGAs and ASICs
+> Javier Campos, Jovan Mitrevski, Nhan Tran
+> Zhen Dong, Amir Gholami, Michael W. Mahoney, Javier Duarte
+> University of California San Diego
+
+
+
 
 
 
