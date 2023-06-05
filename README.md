@@ -1,7 +1,18 @@
-# pytorch-jet-classify
+# Sherlock-Q 
+
+
+## Overview 
+This is our code repository for CSE 237D Spring 2023 Project -- Sherlock Q. 
+
+Our Sherlock-Q project is about developing an Auto-Quantizing Hardware Neutral system, which
+aims to solve some challenges faced in deploying deep learning models, specifically in computation
+and memory requirements. The "Q" stands for "Quantizing," highlighting the project’s main objective.
+Sherlock-Q is a powerful solution for automating the quantization process,which allows users to
+efficiently optimize their neural networks for various hardware platforms.
 
 ## Requirements:
-Python 3.8
+- Python 3.8
+- To use this codebase to determine the performance of Sherlock-Q, one must satisfy all requirements. It is recommend that one sets up in an virtual environment to avoid conflicts. All the libraries used are listed in ```requirements.txt```. Run the following command to instlal all required libraries. 
 
 ```
 pip install -r requirements.txt
@@ -15,6 +26,11 @@ python ./iter_prune.py -i train_data/train/ -t train_data/test/ -c ./configs/tra
 
 ```
 python3 train.py -i <input H5 File/Directory of Files to train on> -o <output directory> -t <H5 File/Directory of files to use as test set> -e <num epoch to train for> -c <config to use>
+```
+
+## Generating Metrics 
+```
+python ./sherlock_optimize.py
 ```
 
 Upon training completion, graphs for the ROC AUC vs Epoch, Loss vs Epoch, Precision vs Epoch, ROC for each tagger, and Confusion Matrix are saved to the output directory, along with a .pt saved model file. 
