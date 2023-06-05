@@ -17,7 +17,8 @@ Neural network quantization is a complex process that typically demands expert i
 - Kai Yui Yeung
 - Vineet Thumuluri
 - You Lee
-- 
+
+
 ## Requirements:
 - Python 3.8
 - To use this codebase to determine the performance of Sherlock-Q, one must satisfy all requirements. It is recommend that one sets up in an virtual environment to avoid conflicts. All the libraries used are listed in ```requirements.txt```. Run the following command to instlal all required libraries. 
