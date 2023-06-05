@@ -1,12 +1,12 @@
 # Sherlock-Q 
 
 
-## Overview 
-This is our code repository for CSE 237D Spring 2023 Project -- Sherlock Q. 
+## Overview  
+For instance, ChatGPT incurs a significant daily cost (~$700K or more) and utilizes around 30K GPUs.
 
 Our Sherlock-Q project is about developing an Auto-Quantizing Hardware Neutral system, which aims to solve some challenges faced in deploying deep learning models, specifically in computation and memory requirements. The "Q" stands for "Quantizing," highlighting the project’s main objective.
 Sherlock-Q is a powerful solution for automating the quantization process,which allows users to efficiently optimize their neural networks for various hardware platforms.
-For instance, ChatGPT incurs a significant daily cost (~$700K or more) and utilizes around 30K GPUs.
+
 
 
 ## Abstract:
