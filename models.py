@@ -137,30 +137,32 @@ class three_layer_model_custom_quant(nn.Module):
         super().__init__()
         self.input_shape = int(16)  # (16,)
         self.quantized_model = True #variable to inform some of our plotting functions this is quantized
+        self.quant_inp = qnn.QuantIdentity(quant_type=QuantType.INT, bit_width=16, max_val=6)
         self.fc1 = qnn.QuantLinear(self.input_shape, int(64),
                                    bias=True,
                                    weight_quant_type=QuantType.INT,
                                    weight_bit_width=quant_config[0])
+        
+        self.act1 = qnn.QuantReLU(quant_type=QuantType.INT, bit_width=quant_config[4], max_val=6)
         self.fc2 = qnn.QuantLinear(64, 32,
                                    bias=True,
                                    weight_quant_type=QuantType.INT,
                                    weight_bit_width=quant_config[1])
+        self.act2 = qnn.QuantReLU(quant_type=QuantType.INT, bit_width=quant_config[4], max_val=6)
         self.fc3 = qnn.QuantLinear(32, 32,
                                    bias=True,
                                    weight_quant_type=QuantType.INT,
                                    weight_bit_width=quant_config[2])
+        self.act3 = qnn.QuantReLU(quant_type=QuantType.INT, bit_width=quant_config[4], max_val=6)
         self.fc4 = qnn.QuantLinear(32, 5,
                                    bias=True,
                                    weight_quant_type=QuantType.INT,
-                                   weight_bit_width=quant_config[3])
-        self.act1 = qnn.QuantReLU(quant_type=QuantType.INT, bit_width=quant_config[4], max_val=6) #TODO Check/Change this away from 6, do we have to set a max value here? Can we not?
-        self.act2 = qnn.QuantReLU(quant_type=QuantType.INT, bit_width=quant_config[4], max_val=6)
-        self.act3 = qnn.QuantReLU(quant_type=QuantType.INT, bit_width=quant_config[4], max_val=6)
+                                   weight_bit_width=quant_config[3]) #TODO Check/Change this away from 6, do we have to set a max value here? Can we not?
         self.softmax = nn.Softmax(0)
 
     def forward(self, x):
-        test = self.fc1(x)
-        x = self.act1(test)
+        x = self.quant_inp(x)
+        x = self.act1(self.fc1(x))
         x = self.act2(self.fc2(x))
         x = self.act3(self.fc3(x))
         softmax_out = self.softmax(self.fc4(x))

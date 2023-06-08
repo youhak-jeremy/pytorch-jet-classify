@@ -20,13 +20,17 @@ def countNonZeroWeights(model):
     return nonzero, total, layer_count_alive, layer_count_total
 
 def calc_BOPS(model, input_data_precision=32):
-    last_bit_width = input_data_precision
+    b_a = None
     alive, total,l_alive,l_total = countNonZeroWeights(model)
     # b_w = 32 #model.weight_precision if hasattr(model, 'weight_precision') else 32
     total_BOPS = 0
     for name, module in model.named_modules():
+        if isinstance(module, qnn.QuantIdentity):
+            b_a = module.quant_act_bit_width()
+        if isinstance(module, qnn.QuantReLU):
+            b_a = module.quant_act_bit_width()
         if isinstance(module, torch.nn.Linear) or isinstance(module, qnn.QuantLinear):
-            b_a = last_bit_width
+            # b_a = last_bit_width
             b_w = module.quant_weight().bit_width #Dont think this is a property I can access sadly, going with precision as given set in model
             n = module.in_features
             m = module.out_features
@@ -37,7 +41,7 @@ def calc_BOPS(model, input_data_precision=32):
             #module_BOPS = m*n*p*(b_a*b_w + b_a + b_w + math.log2(n))
             module_BOPS = m * n * (p * b_a * b_w + b_a + b_w + math.log2(n))
             # print("{} BOPS: {} = {}*{}({}*{}*{} + {} + {} + {})".format(name,module_BOPS,m,n,p,b_a,b_w,b_a,b_w,math.log2(n)))
-            last_bit_width = b_w
+            # last_bit_width = b_w
             total_BOPS += module_BOPS
     print("Total BOPS: {}".format(total_BOPS))
     return total_BOPS.item()
