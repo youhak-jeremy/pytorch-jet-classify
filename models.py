@@ -137,7 +137,7 @@ class three_layer_model_custom_quant(nn.Module):
         super().__init__()
         self.input_shape = int(16)  # (16,)
         self.quantized_model = True #variable to inform some of our plotting functions this is quantized
-        self.quant_inp = qnn.QuantIdentity(quant_type=QuantType.INT, bit_width=16, max_val=6)
+        self.quant_inp = qnn.QuantIdentity(quant_type=QuantType.INT, bit_width=quant_config[4], min_val=-6, max_val=6)
         self.fc1 = qnn.QuantLinear(self.input_shape, int(64),
                                    bias=True,
                                    weight_quant_type=QuantType.INT,
