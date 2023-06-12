@@ -214,10 +214,10 @@ def execute(
 
 if __name__ == "__main__":
     parser = OptionParser()
-    parser.add_option('-i','--input_file'   ,action='store',type='string',dest='input_file'   ,default='', help='location of data to train off of')
+    parser.add_option('-i','--train_file'   ,action='store',type='string',dest='train_file'   ,default='', help='location of data to train off of')
     parser.add_option('-t','--test_file'   ,action='store',type='string',dest='test_file' ,default='', help='Location of test data set')
     parser.add_option('-o','--output_dir'   ,action='store',type='string',dest='output_dir' ,default='train_simple/', help='output directory')
-    parser.add_option('-e','--num_epochs'   ,action='store',type='int', dest='epochs', default=100, help='number of epochs to train for')
+    parser.add_option('-e','--epochs'   ,action='store',type='int', dest='epochs', default=100, help='number of epochs to train for')
     parser.add_option('-c','--config'   ,action='store',type='string',dest='config'   ,default='configs/train_config_threelayer.yml', help='tree name')
     parser.add_option('-m', '--quantization_spec', type='str', dest='quantization_spec', default='32,12,8,6,4', help='comma separated list of which bit widths to run')
     (options,args) = parser.parse_args()
@@ -231,6 +231,6 @@ if __name__ == "__main__":
     execute(
         dataloaders,
         options.output_dir,
-        options.quantization_spec,
-        options.num_epochs
+        [int(x) for x in options.quantization_spec.split('_')],
+        options.epochs
     )
